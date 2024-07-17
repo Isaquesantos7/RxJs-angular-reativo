@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { Livro } from 'src/app/interfaces/Livro';
 import { LivroService } from 'src/app/services/livro.service';
 
 @Component({
@@ -10,10 +11,10 @@ import { LivroService } from 'src/app/services/livro.service';
 
 export class ListaLivrosComponent implements OnInit, OnDestroy{
 
-  protected listaLivros: any[] = [];
+  protected listaLivros: Livro[] = [];
   protected campoBuscar: string = "";
-
   protected subscription: Subscription;
+  protected livro: Livro;
 
   constructor(private livroService: LivroService) { }
 
@@ -24,11 +25,28 @@ export class ListaLivrosComponent implements OnInit, OnDestroy{
   public buscarLivro() {
     this.subscription = this.livroService.buscar(this.campoBuscar).subscribe(
       {
-        next: retorno => console.log(retorno),
+        next: items => this.listaLivros = this.livrosResultadoParaLivros(items),
         error: error => console.error(error),
-        complete: () => console.log("Observable completado!"), 
       }
     )
+  }
+
+  public livrosResultadoParaLivros(items): Livro[] {
+    const livros: Livro[] = [];
+
+    items.forEach(item => {
+      livros.push(this.livro = {
+        title: item.volumeInfo?.title,
+        authors: item.volumeInfo?.authors,
+        publisher: item.volumeInfo?.publisher,
+        publishedDate: item.volumeInfo?.publishedDate,
+        description: item.volumeInfo?.description,
+        previewLink: item.volumeInfo?.previewLink,
+        thumbnail: item.volumeInfo?.imageLinks?.thumbnail 
+      })
+    })
+
+    return livros;
   }
 
   ngOnDestroy(): void {
