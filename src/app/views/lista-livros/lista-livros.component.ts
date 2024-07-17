@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { LivroService } from 'src/app/services/livro.service';
 
 @Component({
@@ -7,10 +8,12 @@ import { LivroService } from 'src/app/services/livro.service';
   styleUrls: ['./lista-livros.component.css']
 })
 
-export class ListaLivrosComponent implements OnInit{
+export class ListaLivrosComponent implements OnInit, OnDestroy{
 
   protected listaLivros: any[] = [];
   protected campoBuscar: string = "";
+
+  protected subscription: Subscription;
 
   constructor(private livroService: LivroService) { }
 
@@ -18,11 +21,18 @@ export class ListaLivrosComponent implements OnInit{
       
   }
 
-  buscarLivro() {
-    this.livroService.buscar(this.campoBuscar).subscribe(
-      (dados) => console.log(dados),
-      (error) =>  console.error(error)
+  public buscarLivro() {
+    this.subscription = this.livroService.buscar(this.campoBuscar).subscribe(
+      {
+        next: retorno => console.log(retorno),
+        error: error => console.error(error),
+        complete: () => console.log("Observable completado!"), 
+      }
     )
+  }
+
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
   }
 }
 
